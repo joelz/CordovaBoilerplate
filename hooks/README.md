@@ -21,3 +21,10 @@
 # Cordova Hooks
 
 Cordova Hooks represent special scripts which could be added by application and plugin developers or even by your own build system  to customize cordova commands. See Hooks Guide for more details:  http://cordova.apache.org/docs/en/edge/guide_appdev_hooks_index.md.html#Hooks%20Guide.
+
+## Ways to define hooks
+
+- 加到 Config.xml 中
+- 加到 Plugin.xml
+- 在 /hooks 文件夹中加上对应的文件夹，文件夹里面加js文件 (Deprecated，不推荐使用了)
+
