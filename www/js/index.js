@@ -16,10 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var backButtonPressed = false;
+
 var app = {
     // Application Constructor
     initialize: function() {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
+        
+        //监听返回键按钮事件
+        //document.addEventListener("backbutton", eventBackButton, false);
+        document.addEventListener("backbutton", eventAppMinimize, false);
     },
 
     // deviceready Event Handler
@@ -44,3 +51,30 @@ var app = {
 };
 
 app.initialize();
+
+//返回键点击响应
+function eventBackButton() {
+    if (backButtonPressed){
+        exitApp()
+    } else {
+        //cordova.plugins.LycPlugin.coolMethod("再按一次退出应用");
+        window.plugins.toast.showShortTop('再按一次退出应用',
+            function (a) { console.log('toast success: ' + a) },
+            function (b) { alert('toast error: ' + b) });
+        
+        //标记为已点击过一次
+        backButtonPressed = true;
+        //2秒内没有再次点击返回则将触发标志标记为false
+        setTimeout(() => backButtonPressed = false, 3000);
+    }
+}
+
+//退出程序
+function exitApp() {
+    navigator.app.exitApp();
+}
+
+//返回键点击响应
+function eventAppMinimize() {
+    window.plugins.appMinimize.minimize();
+}
