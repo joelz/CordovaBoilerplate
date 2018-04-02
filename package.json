@@ -26,5 +26,8 @@
       "android",
       "ios"
     ]
+  },
+  "devDependencies": {
+    "q": "^1.5.1"
   }
 }

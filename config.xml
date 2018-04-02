@@ -25,6 +25,8 @@
     </platform>
     <plugin name="cordova-plugin-dialogs" spec="^2.0.1" />
     <plugin name="cordova-plugin-camera" spec="^4.0.2" />
+    <hook src="scripts/beforeBuild.js" type="before_build" />
+    <hook src="scripts/afterBuild.js" type="after_build" />
     <engine name="android" spec="^6.4.0" />
     <engine name="ios" spec="^4.5.4" />
 </widget>
