@@ -44,6 +44,10 @@
         <img src="" id="get-picture-result" alt="photo">
         <button id="take-picture-button">take a photo</button>
 
+        <br/>
+        <br/>
+        <button id="app-ver-button">app ver</button>
+
     </div>
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" charset="utf-8">
@@ -81,6 +85,14 @@
                         targetHeight: 250
                     }
                 );
+            });
+
+            document.getElementById("app-ver-button").addEventListener("click", function () {
+                Promise.all([getAppName(), getPackageName(), getVersionNumber(), getVersionCode()])
+
+                    .then((data) => {
+                        window.plugins.toast.showShortTop('我的app名字：' + data[0] + ';包名：' + data[1] + ';版本：' + data[2] + ';版本号：' + data[3])
+                    })
             });
         }
 
@@ -147,7 +159,110 @@
         function eventAppMinimize() {
             window.plugins.appMinimize.minimize();
         }
+
+
+        /* 获得app版本,如1.0.0
+        * @description  对应/AndroidManifest.xml中android:versionCode的值
+        * @returns {Promise<string>}
+        */
+        function getVersionNumber() {
+            return new Promise((resolve) => {
+                cordova.getAppVersion.getVersionNumber((version) => {
+                    resolve(version);
+                });
+            });
+        }
+
+
+        /**
+         * 获得app版本号,如10000
+         * @description  对应/config.xml中version的值转化而来
+         * @returns {Promise<string>}
+         */
+        function getVersionCode() {
+            return new Promise((resolve) => {
+                cordova.getAppVersion.getVersionCode((version) => {
+                    resolve(version);
+                });
+            });
+        }
+
+
+        /**
+         * 获得app name,如ionic2_tabs
+         * @description  对应/config.xml中name的值
+         * @returns {Promise<string>}
+         */
+        function getAppName() {
+            return new Promise((resolve) => {
+                cordova.getAppVersion.getAppName((value) => {
+                    resolve(value);
+                });
+            });
+        }
+
+
+        /**
+         * 获得app包名/id,如com.kit.com
+         * @description  对应/config.xml中id的值
+         * @returns {Promise<string>}
+         */
+        function getPackageName() {
+            return new Promise((resolve) => {
+                cordova.getAppVersion.getPackageName((value) => {
+                    resolve(value);
+                })
+            });
+        }
     </script>
+    
+    <script type="text/javascript" charset="utf-8">
+        /**
+         * 下载安装app
+         */
+        function downloadApp(datas, handle) {
+            var fileTransfer = new FileTransfer();
+            //服务器apk的下载路径
+            var uri = encodeURI('xx/xxx.apk');
+            //apk下载后保存的目录
+            var fileURL = 'file:///storage/emulated/0/xxx.apk';
+            fileTransfer.download(
+                uri,
+                fileURL,
+                function (entry) {
+                    //下载完成后利用fileOpener2打开安装包
+                    cordova.plugins.fileOpener2.open(
+                        fileURL,
+                        'application/vnd.android.package-archive',
+                        {
+                            error: function () { },
+                            success: function () { }
+                        }
+                    );
+                },
+                function (error) {
+                    alert("请开启储存权限");
+                }
+            );
+
+
+            //监听下载过程，你可以让用户看到已下载多少
+            fileTransfer.onprogress = function (event) {
+                let num = Math.floor(event.loaded / event.total * 100);
+                if (num === 100) {
+                    $.hidePreloader();
+                } else {
+                    let title = $('.modal-title.update');
+                    if (title.length)
+                        title.text('已下载：' + num + '%')
+                    else
+                        $('.modal-title').text('已下载：' + num + '%');
+                }
+            }
+
+        }
+    </script>
+
 </body>
 
 </html>
