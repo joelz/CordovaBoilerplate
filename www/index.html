@@ -50,10 +50,15 @@
 
         <br/>
         <br/>
-        <button id="check-permissions-button">app ver</button>
+        <button id="check-permissions-button">check permissions</button>
+
+        <br/>
+        <br/>
+        <button id="choose-file-button">choose file</button>
 
     </div>
     <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" charset="utf-8">
         //页面加载后添加各事件监听
         function onLoad() {
@@ -103,245 +108,12 @@
                 checkPermit();
             });
 
-        }
-    </script>
-
-    <script type="text/javascript" charset="utf-8">
-        function Success(imageUri) {
-            appState.takingPicture = false;
-            appState.imageUri = imageUri;
-            document.getElementById("get-picture-result").src = imageUri;
-            console.log("Success: ");
-        }
-
-        function Failure(error) {
-            appState.takingPicture = false;
-            console.log("Failure: ", error);
-        }
-
-        function onPause() {
-            console.log("onPause: ");
-            if (appState.takingPicture || appState.imageUri) {
-                window.localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appState));
-            }
-        }
-
-        function onResume(event) {
-            console.log("onResume: ");
-            var storedState = window.localStorage.getItem(APP_STORAGE_KEY);
-            if (storedState) {
-                appState = JSON.parse(storedState);
-            }
-            if (!appState.takingPicture && appState.imageUri) {
-                document.getElementById("get-picture-result").src = appState.imageUri;
-            }
-            else if (appState.takingPicture && event.pendingResult) {
-                if (event.pendingResult.pluginStatus === "OK") {
-                    Success(event.pendingResult.result);
-                } else {
-                    Failure(event.pendingResult.result);
-                }
-            }
-        }
-
-        //返回键点击响应
-        function eventBackButton() {
-            if (backButtonPressed) {
-                exitApp()
-            } else {
-                //cordova.plugins.LycPlugin.coolMethod("再按一次退出应用");
-                window.plugins.toast.showShortTop('再按一次退出应用',
-                    function (a) { console.log('toast success: ' + a) },
-                    function (b) { alert('toast error: ' + b) });
-
-                //标记为已点击过一次
-                backButtonPressed = true;
-                //2秒内没有再次点击返回则将触发标志标记为false
-                setTimeout(() => backButtonPressed = false, 3000);
-            }
-        }
-
-        //退出程序
-        function exitApp() {
-            navigator.app.exitApp();
-        }
-
-        //返回键点击响应
-        function eventAppMinimize() {
-            window.plugins.appMinimize.minimize();
-        }
-
-    </script>
-
-    <script type="text/javascript" charset="utf-8">
-        /* 获得app版本,如1.0.0
-        * @description  对应/AndroidManifest.xml中android:versionCode的值
-        * @returns {Promise<string>}
-        */
-        function getVersionNumber() {
-            return new Promise((resolve) => {
-                cordova.getAppVersion.getVersionNumber((version) => {
-                    resolve(version);
-                });
-            });
-        }
-
-
-        /**
-         * 获得app版本号,如10000
-         * @description  对应/config.xml中version的值转化而来
-         * @returns {Promise<string>}
-         */
-        function getVersionCode() {
-            return new Promise((resolve) => {
-                cordova.getAppVersion.getVersionCode((version) => {
-                    resolve(version);
-                });
-            });
-        }
-
-
-        /**
-         * 获得app name,如ionic2_tabs
-         * @description  对应/config.xml中name的值
-         * @returns {Promise<string>}
-         */
-        function getAppName() {
-            return new Promise((resolve) => {
-                cordova.getAppVersion.getAppName((value) => {
-                    resolve(value);
-                });
-            });
-        }
-
-
-        /**
-         * 获得app包名/id,如com.kit.com
-         * @description  对应/config.xml中id的值
-         * @returns {Promise<string>}
-         */
-        function getPackageName() {
-            return new Promise((resolve) => {
-                cordova.getAppVersion.getPackageName((value) => {
-                    resolve(value);
-                })
-            });
-        }
-    </script>
-
-    <script type="text/javascript" charset="utf-8">
-        /**
-         * 下载安装app
-         */
-        function downloadApp(datas, handle) {
-            var fileTransfer = new FileTransfer();
-            //服务器apk的下载路径
-            var uri = encodeURI('xx/xxx.apk');
-            //apk下载后保存的目录
-            var fileURL = 'file:///storage/emulated/0/xxx.apk';
-            fileTransfer.download(
-                uri,
-                fileURL,
-                function (entry) {
-                    //下载完成后利用fileOpener2打开安装包
-                    cordova.plugins.fileOpener2.open(
-                        fileURL,
-                        'application/vnd.android.package-archive',
-                        {
-                            error: function () { },
-                            success: function () { }
-                        }
-                    );
-                },
-                function (error) {
-                    alert("请开启储存权限");
-                }
-            );
-
-
-            //监听下载过程，你可以让用户看到已下载多少
-            fileTransfer.onprogress = function (event) {
-                let num = Math.floor(event.loaded / event.total * 100);
-                if (num === 100) {
-                    $.hidePreloader();
-                } else {
-                    let title = $('.modal-title.update');
-                    if (title.length)
-                        title.text('已下载：' + num + '%')
-                    else
-                        $('.modal-title').text('已下载：' + num + '%');
-                }
-            }
-
-        }
-    </script>
-
-
-    <script type="text/javascript" charset="utf-8">
-
-        function checkPermit() {
-            var permissions = cordova.plugins.permissions;
-            var camera = permissions.CAMERA;
-
-            permissions.checkPermission(camera, function (status) {
-                if (status.hasPermission) {
-                    console.log("Yes :D ");
-                }
-                else {
-                    permissions.requestPermission(camera, success, error);
-
-                    function error() {
-                        console.warn('Camera permission is not turned on');
-                    }
-
-                    function success(status) {
-                        if (!status.hasPermission) error();
-                    }
-                }
+            document.getElementById("choose-file-button").addEventListener("click", function () {
+                chooseFile();
             });
 
 
-            appAvailability.check(
-                'com.twitter.android', // Package Name
-                function (info) {           // Success callback        
-                    // Info parameter is available only for android
-                    console.log('Twitter is available, and it\'s version is ', info.version);
-                },
-                function () {           // Error callback
-                    console.log('Twitter is not available');
-                }
-            );
-
         }
-
-        function startApp() {
-
-            // cordova plugin add com.lampa.startapp
-
-            var uri = "baidumap://map/direction?origin=我的位置&destination=中电软件园";
-            var pck = "com.baidu.BaiduMap";//包名
-            var sApp = startApp.set({
-                "action": "ACTION_VIEW",
-                "category": "CATEGORY_DEFAULT",
-                "type": "text/css",
-                "package": pck,
-                "uri": uri,
-                "flags": ["FLAG_ACTIVITY_CLEAR_TOP", "FLAG_ACTIVITY_CLEAR_TASK"],
-                "intentstart": "startActivity",
-            }, { /* extras */
-                    "EXTRA_STREAM": "extraValue1",
-                    "extraKey2": "extraValue2"
-                }
-            );
-
-            sApp.start(function () { /* success */
-                cordova.plugins.LycPlugin.coolMethod("返回应用");
-            }, function (error) { /* fail */
-                cordova.plugins.LycPlugin.coolMethod('开启地图出错');
-            });
-
-        }
-
     </script>
 
 </body>
