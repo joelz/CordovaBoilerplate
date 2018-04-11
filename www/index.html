@@ -48,6 +48,10 @@
         <br/>
         <button id="app-ver-button">app ver</button>
 
+        <br/>
+        <br/>
+        <button id="check-permissions-button">app ver</button>
+
     </div>
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" charset="utf-8">
@@ -94,8 +98,15 @@
                         window.plugins.toast.showShortTop('我的app名字：' + data[0] + ';包名：' + data[1] + ';版本：' + data[2] + ';版本号：' + data[3])
                     })
             });
-        }
 
+            document.getElementById("check-permissions-button").addEventListener("click", function () {
+                checkPermit();
+            });
+
+        }
+    </script>
+
+    <script type="text/javascript" charset="utf-8">
         function Success(imageUri) {
             appState.takingPicture = false;
             appState.imageUri = imageUri;
@@ -160,7 +171,9 @@
             window.plugins.appMinimize.minimize();
         }
 
+    </script>
 
+    <script type="text/javascript" charset="utf-8">
         /* 获得app版本,如1.0.0
         * @description  对应/AndroidManifest.xml中android:versionCode的值
         * @returns {Promise<string>}
@@ -215,7 +228,7 @@
             });
         }
     </script>
-    
+
     <script type="text/javascript" charset="utf-8">
         /**
          * 下载安装app
@@ -261,6 +274,74 @@
             }
 
         }
+    </script>
+
+
+    <script type="text/javascript" charset="utf-8">
+
+        function checkPermit() {
+            var permissions = cordova.plugins.permissions;
+            var camera = permissions.CAMERA;
+
+            permissions.checkPermission(camera, function (status) {
+                if (status.hasPermission) {
+                    console.log("Yes :D ");
+                }
+                else {
+                    permissions.requestPermission(camera, success, error);
+
+                    function error() {
+                        console.warn('Camera permission is not turned on');
+                    }
+
+                    function success(status) {
+                        if (!status.hasPermission) error();
+                    }
+                }
+            });
+
+
+            appAvailability.check(
+                'com.twitter.android', // Package Name
+                function (info) {           // Success callback        
+                    // Info parameter is available only for android
+                    console.log('Twitter is available, and it\'s version is ', info.version);
+                },
+                function () {           // Error callback
+                    console.log('Twitter is not available');
+                }
+            );
+
+        }
+
+        function startApp() {
+
+            // cordova plugin add com.lampa.startapp
+
+            var uri = "baidumap://map/direction?origin=我的位置&destination=中电软件园";
+            var pck = "com.baidu.BaiduMap";//包名
+            var sApp = startApp.set({
+                "action": "ACTION_VIEW",
+                "category": "CATEGORY_DEFAULT",
+                "type": "text/css",
+                "package": pck,
+                "uri": uri,
+                "flags": ["FLAG_ACTIVITY_CLEAR_TOP", "FLAG_ACTIVITY_CLEAR_TASK"],
+                "intentstart": "startActivity",
+            }, { /* extras */
+                    "EXTRA_STREAM": "extraValue1",
+                    "extraKey2": "extraValue2"
+                }
+            );
+
+            sApp.start(function () { /* success */
+                cordova.plugins.LycPlugin.coolMethod("返回应用");
+            }, function (error) { /* fail */
+                cordova.plugins.LycPlugin.coolMethod('开启地图出错');
+            });
+
+        }
+
     </script>
 
 </body>
